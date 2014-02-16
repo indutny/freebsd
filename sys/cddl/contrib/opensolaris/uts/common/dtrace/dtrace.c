@@ -155,11 +155,11 @@
 int		dtrace_destructive_disallow = 0;
 dtrace_optval_t	dtrace_nonroot_maxsize = (16 * 1024 * 1024);
 size_t		dtrace_difo_maxsize = (256 * 1024);
-dtrace_optval_t	dtrace_dof_maxsize = (256 * 1024);
+int	dtrace_dof_maxsize = (256 * 1024);
 size_t		dtrace_global_maxsize = (16 * 1024);
 size_t		dtrace_actions_max = (16 * 1024);
 size_t		dtrace_retain_max = 1024;
-dtrace_optval_t	dtrace_helper_actions_max = 128;
+int	dtrace_helper_actions_max = 128;
 dtrace_optval_t	dtrace_helper_providers_max = 32;
 dtrace_optval_t	dtrace_dstate_defsize = (1 * 1024 * 1024);
 size_t		dtrace_strsize_default = 256;
@@ -11941,7 +11941,7 @@ dtrace_dof_copyin(uintptr_t uarg, int *errp)
 	 * Now we'll allocate the entire DOF and copy it in -- provided
 	 * that the length isn't outrageous.
 	 */
-	if (hdr.dofh_loadsz >= dtrace_dof_maxsize) {
+	if (hdr.dofh_loadsz >= (dtrace_optval_t) dtrace_dof_maxsize) {
 		dtrace_dof_error(&hdr, "load size exceeds maximum");
 		*errp = E2BIG;
 		return (NULL);
@@ -12032,7 +12032,7 @@ dtrace_dof_property(const char *name)
 		return (NULL);
 	}
 
-	if (loadsz >= dtrace_dof_maxsize) {
+	if (loadsz >= (dtrace_optval_t) dtrace_dof_maxsize) {
 		ddi_prop_free(buf);
 		dtrace_dof_error(NULL, "oversized DOF");
 		return (NULL);
@@ -12076,7 +12076,7 @@ dtrace_dof_property(const char *name)
 		return (NULL);
 	}
 
-	if (loadsz >= dtrace_dof_maxsize) {
+	if (loadsz >= (dtrace_optval_t) dtrace_dof_maxsize) {
 		kmem_free(buf, 0);
 		dtrace_dof_error(NULL, "oversized DOF");
 		return (NULL);

@@ -22,6 +22,9 @@
  *
  */
 
+SYSCTL_DECL(_kern_dtrace);
+SYSCTL_NODE(_kern, OID_AUTO, dtrace, CTLFLAG_RD, 0, "DTrace subsystem");
+
 int	dtrace_debug = 0;
 TUNABLE_INT("debug.dtrace.debug", &dtrace_debug);
 SYSCTL_INT(_debug_dtrace, OID_AUTO, debug, CTLFLAG_RW, &dtrace_debug, 0, "");
@@ -80,3 +83,7 @@ sysctl_dtrace_providers(SYSCTL_HANDLER_ARGS)
 SYSCTL_PROC(_debug_dtrace, OID_AUTO, providers, CTLTYPE_STRING | CTLFLAG_RD,
     0, 0, sysctl_dtrace_providers, "A", "");
 
+SYSCTL_INT(_kern_dtrace, OID_AUTO, dof_maxsize, CTLFLAG_RW | CTLFLAG_TUN,
+    &dtrace_dof_maxsize, 256 * 1024, "largest allowed DOF");
+SYSCTL_INT(_kern_dtrace, OID_AUTO, helper_actions_max, CTLFLAG_RW | CTLFLAG_TUN,
+    &dtrace_helper_actions_max, 128, "maximum number of allowed actions");
