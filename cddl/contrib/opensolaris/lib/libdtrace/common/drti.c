@@ -127,6 +127,7 @@ dtrace_dof_init(void)
 	int efd;
 	char *s;
 	size_t shstridx;
+	uint64_t dof_aligned_size;
 #endif
 
 	if (getenv("DTRACE_DOF_INIT_DISABLE") != NULL)
@@ -166,11 +167,12 @@ dtrace_dof_init(void)
 	dof = NULL;
 	while ((scn = elf_nextscn(e, scn)) != NULL) {
 		gelf_getshdr(scn, &shdr);
-		if (shdr.sh_type == SHT_SUNW_dof) {
+		if (shdr.sh_type == SHT_SUNW_dof || shdr.sh_type == SHT_PROGBITS) {
 			s = elf_strptr(e, shstridx, shdr.sh_name);
 			if (s != NULL && strcmp(s, ".SUNW_dof") == 0) {
 				dofdata = elf_getdata(scn, NULL);
 				dof = dofdata->d_buf;
+				break;
 			}
 		}
 	}
@@ -182,7 +184,13 @@ dtrace_dof_init(void)
 	}
 
 	while ((char *) dof < (char *) dofdata->d_buf + dofdata->d_size) {
-		dof_next = (void *) ((char *) dof + dof->dofh_filesz);
+		/* Next DOF section should have aligned address */
+		dof_aligned_size = dof->dofh_filesz;
+		if (shdr.sh_addralign != 0 && dof_aligned_size % shdr.sh_addralign != 0) {
+			dof_aligned_size += shdr.sh_addralign -
+				dof_aligned_size % shdr.sh_addralign;
+		}
+		dof_next = (void *) ((char *) dof + dof_aligned_size);
 #endif
 
 	if (dof->dofh_ident[DOF_ID_MAG0] != DOF_MAG_MAG0 ||
